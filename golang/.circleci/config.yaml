@@ -30,5 +30,7 @@ jobs:
             name: Upload image
             command: |
               if [ $CIRCLE_BRANCH == "master" ]; then
-                ./upload_image.sh
+                echo $GCR_TM_AUTH > ${HOME}/gcloud-service-key.json
+                gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
+                bluecore cloudbuild . --config cloudbuilder.yaml --service-name customers --tag $CIRCLE_SHA1 --gcloud-key-path $HOME/gcloud-service-key.json
               fi
