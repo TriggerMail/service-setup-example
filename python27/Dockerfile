@@ -2,6 +2,10 @@
 FROM python:2.7.14-slim-stretch
 COPY . /app/
 LABEL maintainer="youremailhere"
+
+# This argument gives us the URL to access our private pypi repository.
+# this is usually set by bluecore activate as $PIP_EXTRA_INDEX_URL
+ARG PIP_EXTRA_INDEX_URL
  
 # disable pip cache dir: it should not exist, and there is no point adding entries to it
 RUN pip install --no-cache-dir --find-links /app/service_lib -r /app/requirements.txt && \
