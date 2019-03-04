@@ -1,0 +1,44 @@
+version: 2
+jobs:
+    build:
+      docker:
+      - image: us.gcr.io/triggeredmail/circle_build_container:20190103-d327e8d314
+        auth:
+          username: _json_key
+          # This was a key generated in gcloud's bluecore-qa IAM console for circle-ci-image-retrieval@bluecore-qa.iam.gserviceaccount.com
+          # this service-account has read access to bluecore-qa: artifacts.bluecore-qa.appspot.com where images are stored.
+          password: $GCR_TM_AUTH
+      working_directory: ~/<service>
+      steps:
+        - checkout
+        - run:
+            name: Export PATH for Deployment
+            command: /home/circleci/devenv/bluecore activate >> $BASH_ENV
+        - restore_cache:  # ensure this step occurs *before* installing dependencies
+            key: venv-{{ .Branch }}-{{ checksum "requirements.txt" }}
+        - run:
+            name: Set up virtual environment
+            command: |
+              virtualenv ~/venv
+              ~/venv/bin/pip install -r requirements.txt
+        - save_cache:
+            key: venv-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements_testing.txt" }}
+            paths:
+              - ".venv"
+        - store_test_results:
+          path: test-results
+        - store_artifacts:
+          path: test-results
+          destination: tr1
+        # run tests using nosetests
+        - run:
+            name: run tests
+            command: |
+              . venv/bin/activate
+              nosetests -s tests/
+        - deploy:
+            name: Push application Docker image
+            command: |
+              if [ $CIRCLE_BRANCH == "master" ]; then
+                ./upload_image.sh
+              fi

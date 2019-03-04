@@ -1,0 +1,34 @@
+version: 2
+jobs:
+    build:
+      docker:
+      - image: us.gcr.io/triggeredmail/circle_build_container:20190103-d327e8d314
+        auth:
+          username: _json_key
+          # This was a key generated in gcloud's bluecore-qa IAM console for circle-ci-image-retrieval@bluecore-qa.iam.gserviceaccount.com
+          # this service-account has read access to bluecore-qa: artifacts.bluecore-qa.appspot.com where images are stored.
+          password: $GCR_TM_AUTH
+      working_directory: /home/circleci/go/src/github.com/TriggerMail/customers
+      steps:
+        - checkout
+        - run:
+            name: Export PATH for Deployment
+            command: |
+              /home/circleci/devenv/bluecore activate >> $BASH_ENV
+              echo "GOPATH=/home/circleci/go" >> $BASH_ENV
+        - run: 
+            name: Find formatting issues
+            command: go vet ./...
+        - run:
+            name: Run tests
+            # Runs each test 10 times to try to avoid flaky tests or depending on map ordering
+            command: go test -race -count=10 ./...
+        - run: 
+            name: Find formatting issues
+            command: diff -u <(echo -n) <(gofmt -d ./...)
+        - run:
+            name: Upload image
+            command: |
+              if [ $CIRCLE_BRANCH == "master" ]; then
+                ./upload_image.sh
+              fi

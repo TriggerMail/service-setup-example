@@ -1,0 +1,20 @@
+# we need to ignore almost all of luci-go due to linking in their files which leads 
+# to dep creating dangling links. This causes an OSError trying to upload to gcloud
+# Here we explicitly keep only what is needed from luci-go. `!**/*.go` and its 
+# variants do not seem to work
+# we only need the router package in luci-go/server, but for some reason any iteration
+# of `!*server/router` does not work. To get around this, we can upload all of server, 
+# but ignore the static folder under it
+*luci-go/*
+!*luci-go/grpc
+!*luci-go/common
+!*luci-go/server
+*luci-go/server/static
+
+# similar issue with dangling links occurs in grpc-ecosystem with their markdown files
+# markdown files are not needed to build docker container, so just omit all md files
+# https://issuetracker.google.com/issues/124025092
+*.md
+
+.circleci/*
+.vscode/*
