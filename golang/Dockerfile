@@ -1,13 +1,13 @@
 FROM golang:1.11-stretch as stage1
-LABEL maintainer="madeline.neumiller@bluecore.com"
+LABEL maintainer="<your email>"
 
-ADD . /go/src/github.com/TriggerMail/customers
+ADD . /go/src/github.com/TriggerMail/<service dir>
 
-RUN go install -v github.com/TriggerMail/customers
+RUN go install -v github.com/TriggerMail/<service dir>
 
 # A lightweight Dockerfile
 FROM gcr.io/distroless/base:latest
-LABEL maintainer="madeline.neumiller@bluecore.com"
+LABEL maintainer="<your email>"
 
 WORKDIR /app
 
@@ -15,6 +15,6 @@ WORKDIR /app
 USER 1000
 EXPOSE 8080
 
-COPY --from=stage1 /go/bin/customers /
+COPY --from=stage1 /go/bin/<service dir> /
 
-ENTRYPOINT ["/customers", "--addr", ":8080"]
+ENTRYPOINT ["/<service dir>", "--addr", ":8080"]
