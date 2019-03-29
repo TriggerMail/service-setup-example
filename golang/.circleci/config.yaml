@@ -2,13 +2,13 @@ version: 2
 jobs:
     build:
       docker:
-      - image: us.gcr.io/triggeredmail/circle_build_container:20190103-d327e8d314
+      - image: $BUILD_CONTAINER_IMAGE
         auth:
           username: _json_key
           # This was a key generated in gcloud's bluecore-qa IAM console for circle-ci-image-retrieval@bluecore-qa.iam.gserviceaccount.com
           # this service-account has read access to bluecore-qa: artifacts.bluecore-qa.appspot.com where images are stored.
           password: $GCR_TM_AUTH
-      working_directory: /home/circleci/go/src/github.com/TriggerMail/customers
+      working_directory: /home/circleci/go/src/github.com/TriggerMail/<repo>
       steps:
         - checkout
         - run:
@@ -34,3 +34,10 @@ jobs:
                 gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
                 bluecore cloudbuild . --config cloudbuilder.yaml --service-name customers --tag $CIRCLE_SHA1 --gcloud-key-path $HOME/gcloud-service-key.json
               fi
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build:
+          context: build-global
