@@ -23,9 +23,16 @@ jobs:
             name: Run tests
             # Runs each test 10 times to try to avoid flaky tests or depending on map ordering
             command: go test -race -count=10 ./...
-        - run: 
-            name: Find formatting issues
-            command: diff -u <(echo -n) <(gofmt -d ./...)
+        - run:
+            name: Check code is formatted with gofmt
+            command: |
+              go fmt ./...
+              CHANGED=$(git status --porcelain --untracked-files=no)
+              if [ -n "${CHANGED}" ]; then
+                  echo "ERROR Go files must be formatted with go fmt; Format these files:" > /dev/stderr
+                  echo "$CHANGED" > /dev/stderr
+                  exit 10
+              fi
         - run:
             name: Upload image
             command: |
