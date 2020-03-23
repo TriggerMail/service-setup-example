@@ -5,9 +5,7 @@ jobs:
       - image: $BUILD_CONTAINER_IMAGE
         auth:
           username: _json_key
-          # This was a key generated in gcloud's bluecore-qa IAM console for circle-ci-image-retrieval@bluecore-qa.iam.gserviceaccount.com
-          # this service-account has read access to bluecore-qa: artifacts.bluecore-qa.appspot.com where images are stored.
-          password: $GCR_TM_AUTH
+          password: $TRIGGERMAIL_GCR_AUTH
       working_directory: /home/circleci/go/src/github.com/TriggerMail/<repo>
       steps:
         - checkout
